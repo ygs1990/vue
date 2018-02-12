@@ -26,3 +26,11 @@ This is a backend management system, If you cann't run the project after you dow
 ## Screenshots of the project
 !['The login page'](https://github.com/ygs1990/vue/blob/master/refactor/screenshots/login.png)
 !['The login page'](https://github.com/ygs1990/vue/blob/master/refactor/screenshots/agency.png)
+!['The login page'](https://github.com/ygs1990/vue/blob/master/refactor/screenshots/balance.png)
+!['The login page'](https://github.com/ygs1990/vue/blob/master/refactor/screenshots/handle_balance.png)
+!['The login page'](https://github.com/ygs1990/vue/blob/master/refactor/screenshots/agencylist.png)
+!['The login page'](https://github.com/ygs1990/vue/blob/master/refactor/screenshots/agencyDetail.png)
+!['The login page'](https://github.com/ygs1990/vue/blob/master/refactor/screenshots/merchant.png)
+!['The login page'](https://github.com/ygs1990/vue/blob/master/refactor/screenshots/addMerchant.png)
+!['The login page'](https://github.com/ygs1990/vue/blob/master/refactor/screenshots/synchoronous.png)
+!['The login page'](https://github.com/ygs1990/vue/blob/master/refactor/screenshots/accounts.png)
