@@ -1,0 +1,788 @@
+<template>
+  <div class="content">
+    <el-form :model="insMchnt" :rules="formRules" ref="mchnt" label-width="150px" >
+      <!--通道商户基本信息-->
+      <el-row>
+        <el-col :sm="23" :md="{span: 10, offset: 1}">
+          <el-form-item label="商户所属通道机构：" prop="insId">
+            <el-select v-model.trim="insMchnt.insId" filterable clearable
+                       :disabled="!!(disabled || insMchnt.insId)" placeholder="请选择" style="width: 100%">
+              <el-option v-for="(ins, index) in insList" :label="ins.name +'--'+ ins.code"
+                         :value="ins.id | stringNumber" :key="ins.id">
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+
+        <el-col :sm="23" :md="{span: 10, offset: 2}">
+          <el-form-item label="支付通道：" prop="channelCode">
+            <el-select v-model.trim="insMchnt.channelCode" placeholder="请选择"
+                       :disabled="!!(disabled || insMchnt.channelCode)" style="width: 100%">
+              <el-option label="微信" value="WXPAY">
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row>
+        <el-col :sm="23" :md="{span: 10, offset: 1}">
+          <el-form-item label="商户编号：" prop="mchntCode">
+            <el-input v-model.trim="insMchnt.mchntCode" placeholder="必填"
+                      :readonly="!!(readonly || insMchnt.channelCode)" >
+            </el-input>
+          </el-form-item>
+        </el-col>
+
+        <el-col :sm="23" :md="{span: 10, offset: 2}">
+          <el-form-item label="商户名称：" prop="mchntName">
+            <el-input v-model.trim="insMchnt.mchntName" :readonly="readonly" placeholder="必填"></el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row>
+        <el-col :sm="23" :md="{span: 10, offset: 1}">
+          <el-form-item label="商户类别：" prop="businessId">
+            <el-row>
+              <el-col :span="12">
+                <el-select v-model.trim="insMchnt.parentMccId" filterable clearable :disabled="disabled"
+                           @change="mccChange" placeholder="请选择" style="width: 100%">
+                  <el-option v-for="(type, index) in mccType" :label="type.mccName"
+                             :value="type.hfMccId | stringNumber" :key="type.hfMccId">
+                  </el-option>
+                </el-select>
+              </el-col>
+
+              <el-col :span="12">
+                <el-select v-model.trim="insMchnt.businessId" filterable clearable
+                           :disabled="disabled" placeholder="请选择" style="width: 100%">
+                  <el-option v-for="(mcc, index) in mccList" :label="mcc.mccName"
+                             :value="mcc.mccCode | stringNumber" :key="mcc.hfMccId">
+                  </el-option>
+                </el-select>
+              </el-col>
+            </el-row>
+          </el-form-item>
+        </el-col>
+
+        <el-col :sm="23" :md="{span: 10, offset: 2}">
+          <el-form-item label="商户简称：" prop="mchntShortName">
+            <el-input v-model.trim="insMchnt.mchntShortName" :readonly="readonly" placeholder="必填"></el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row>
+        <el-col :sm="23" :md="{span: 10, offset: 1}">
+          <el-form-item label="区域编码：" prop="regionCode">
+            <el-row>
+              <el-col :span="8">
+                <el-select v-model.trim="insMchnt.proviceRegionId" filterable clearable :disabled="disabled"
+                           @change="provinceChange" @visible-change="provinceClick" placeholder="请选择省份">
+                  <el-option v-for="(province, index) in provinceCodes" :label="province.regionName"
+                             :value="province.regionCodeId | stringNumber" :key="province.regionCodeId">
+                  </el-option>
+                </el-select>
+              </el-col>
+
+              <el-col :span="8">
+                <el-select v-model.trim="insMchnt.cityRegionId" filterable clearable :disabled="disabled"
+                           @change="cityChange" placeholder="请选择城市">
+                  <el-option v-for="(city, index) in cityCodes" :label="city.regionName"
+                             :value="city.regionCodeId | stringNumber" :key="city.regionCodeId">
+                  </el-option>
+                </el-select>
+              </el-col>
+
+              <el-col :span="8">
+                <el-select v-model.trim="insMchnt.regionCode" filterable clearable :disabled="disabled" placeholder="请选择区县">
+                  <el-option v-for="(region, index) in regionCodes" :label="region.regionName"
+                             :value="region.regionCode | stringNumber" :key="region.regionCodeId">
+                  </el-option>
+                </el-select>
+              </el-col>
+            </el-row>
+          </el-form-item>
+        </el-col>
+
+        <el-col :sm="23" :md="{span: 10, offset: 2}">
+          <el-form-item label="详细地址：" prop="address">
+            <el-input v-model.trim="insMchnt.address" :readonly="readonly"></el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row>
+        <el-col :sm="23" :md="{span: 10, offset: 1}">
+          <el-form-item label="户名：" prop="name">
+            <el-input v-model.trim="insMchnt.name" :readonly="readonly" placeholder="必填"></el-input>
+          </el-form-item>
+        </el-col>
+
+        <el-col :sm="23" :md="{span: 10, offset: 2}">
+          <el-form-item label="联系电话：" prop="mchntPhone">
+            <el-input v-model.trim="insMchnt.mchntPhone" :readonly="readonly" placeholder="必填"></el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row>
+        <el-col :sm="23" :md="{span: 10, offset: 1}">
+          <el-form-item label="卡类型：" prop="cardType">
+            <el-select v-model.trim="insMchnt.cardType" filterable clearable
+                       :disabled="!!(disabled || insMchnt.cardType)" placeholder="请选择" style="width: 100%">
+              <el-option label="借记卡" value="1"></el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+
+        <el-col :sm="23" :md="{span: 10, offset: 2}">
+          <el-form-item label="卡号：" prop="cardNo">
+            <el-input v-model.trim="insMchnt.cardNo" :readonly="readonly" placeholder="必填"></el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row>
+        <el-col :sm="23" :md="{span: 10, offset: 1}">
+          <el-form-item label="证件类型：" prop="certType">
+            <el-select v-model.trim="insMchnt.certType" filterable clearable
+                       :disabled="!!(disabled || insMchnt.certType)" placeholder="请选择" style="width: 100%">
+              <el-option label="身份证" value="00"></el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+
+        <el-col :sm="23" :md="{span: 10, offset: 2}">
+          <el-form-item label="证件号：" prop="certNo">
+            <el-input v-model.trim="insMchnt.certNo" :readonly="readonly" placeholder="必填"></el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row>
+        <el-col :sm="23" :md="{span: 10, offset: 1}">
+          <el-form-item label="开户手机号：" prop="mobile">
+            <el-input v-model.trim="insMchnt.mobile" :readonly="readonly" placeholder="必填"></el-input>
+          </el-form-item>
+        </el-col>
+
+        <el-col :sm="23" :md="{span: 10, offset: 2}">
+          <el-form-item label="开户城市：" prop="location">
+            <el-row>
+              <el-col :span="12">
+                <el-select v-model.trim="insMchnt.provinceId" filterable clearable
+                           @change="originalProvince" @visible-change="provinceClick"
+                           :disabled="disabled" placeholder="请选择省份" style="width: 100%">
+                  <el-option v-for="(province, index) in provinceList" :label="province.name" :value="province.id | stringNumber" :key="province.id"></el-option>
+                </el-select>
+              </el-col>
+
+              <el-col :span="12">
+                <el-select v-model.trim="insMchnt.location" filterable clearable
+                           :disabled="disabled" placeholder="请选择城市" style="width: 100%">
+                  <el-option v-for="(city, index) in cityList" :label="city.name" :value="city.name" :key="city.id"></el-option>
+                </el-select>
+              </el-col>
+            </el-row>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <!--身份证正反面-->
+      <el-row>
+        <el-col :sm="23" :md="{span: 10, offset: 1}">
+          <el-form-item label="身份证正面：" prop="certCorrect">
+            <el-upload
+              class="upload-demo"
+              name="certCorrect"
+              list-type="picture-card"
+              :on-preview="photoPreview"
+              :action="uploadInterface"
+              :on-success="uploadCert"
+              :on-remove="removeCert"
+              :before-upload='checkFile'
+              :file-list="certList"
+              :disabled='disabled || certUnable'>
+              <i class="el-icon-plus"></i>
+              <div slot="tip" class="el-upload__tip">只能上传一个jpg/png文件，且不超过2M</div>
+            </el-upload>
+
+            <el-dialog v-model="showDialog" size="tiny">
+              <img width="100%" :src="photoOriginalDir" alt="">
+            </el-dialog>
+          </el-form-item>
+        </el-col>
+
+        <el-col :sm="23" :md="{span: 10, offset: 2}">
+          <el-form-item label="身份证反面：" prop="certOpposite">
+            <el-upload
+              class="upload-demo"
+              name="certOpposite"
+              list-type="picture-card"
+              :on-preview="photoPreview"
+              :action="uploadInterface"
+              :on-success="uploadCertOpposite"
+              :on-remove="removeCertOpposite"
+              :before-upload='checkFile'
+              :file-list="certOppoList"
+              :disabled='disabled || certOppUnable'>
+              <i class="el-icon-plus"></i>
+              <div slot="tip" class="el-upload__tip">只能上传一个jpg/png文件，且不超过2M</div>
+            </el-upload>
+
+            <el-dialog v-model="showDialog" size="tiny">
+              <img width="100%" :src="photoOriginalDir" alt="">
+            </el-dialog>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <!--银行卡正反面-->
+      <el-row>
+        <el-col :sm="23" :md="{span: 10, offset: 1}">
+          <el-form-item label="银行卡正面：" prop="cardCorrect">
+            <el-upload
+              class="upload-demo"
+              name="cardCorrect"
+              list-type="picture-card"
+              :on-preview="photoPreview"
+              :action="uploadInterface"
+              :on-success="uploadCardCorrect"
+              :on-remove="removeCardCorrect"
+              :before-upload='checkFile'
+              :disabled='disabled || cardUnable'>
+              <i class="el-icon-plus"></i>
+              <div slot="tip" class="el-upload__tip">只能上传一个jpg/png文件，且不超过2M</div>
+            </el-upload>
+
+            <el-dialog v-model="showDialog" size="tiny">
+              <img width="100%" :src="photoOriginalDir" alt="">
+            </el-dialog>
+          </el-form-item>
+        </el-col>
+
+        <el-col :sm="23" :md="{span: 10, offset: 2}">
+          <el-form-item label="银行卡反面：" prop="cardOppsite">
+            <el-upload
+              class="upload-demo"
+              name="cardOppsite"
+              list-type="picture-card"
+              :on-preview="photoPreview"
+              :action="uploadInterface"
+              :on-success="uploadCardOppsite"
+              :on-remove="removeCardOppsite"
+              :before-upload='checkFile'
+              :disabled='disabled || cardOppUnable'>
+              <i class="el-icon-plus"></i>
+              <div slot="tip" class="el-upload__tip">只能上传一个jpg/png文件，且不超过2M</div>
+            </el-upload>
+
+            <el-dialog v-model="showDialog" size="tiny">
+              <img width="100%" :src="photoOriginalDir" alt="">
+            </el-dialog>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <!--手持身份证、营业执照-->
+      <el-row>
+        <el-col :sm="23" :md="{span: 10, offset: 1}">
+          <el-form-item label="手持身份证：" prop="certMeet">
+            <el-upload
+              class="upload-demo"
+              name="certMeet"
+              list-type="picture-card"
+              :on-preview="photoPreview"
+              :action="uploadInterface"
+              :on-success="uploadCertMeet"
+              :on-remove="removeCertMeet"
+              :before-upload='checkFile'
+              :disabled='disabled || meetUnable'>
+              <i class="el-icon-plus"></i>
+              <div slot="tip" class="el-upload__tip">只能上传一个jpg/png文件，且不超过2M</div>
+            </el-upload>
+
+            <el-dialog v-model="showDialog" size="tiny">
+              <img width="100%" :src="photoOriginalDir" alt="">
+            </el-dialog>
+          </el-form-item>
+        </el-col>
+
+        <el-col :sm="23" :md="{span: 10, offset: 2}">
+          <el-form-item label="营业执照照片：" prop="blImg">
+            <el-upload
+              class="upload-demo"
+              name="blImg"
+              list-type="picture-card"
+              :on-preview="photoPreview"
+              :action="uploadInterface"
+              :on-success="uploadBlImg"
+              :on-remove="removeBlImg"
+              :before-upload='checkFile'
+              :disabled='disabled || blImgUnable'>
+              <i class="el-icon-plus"></i>
+              <div slot="tip" class="el-upload__tip">只能上传一个jpg/png文件，且不超过2M</div>
+            </el-upload>
+
+            <el-dialog v-model="showDialog" size="tiny">
+              <img width="100%" :src="photoOriginalDir" alt="">
+            </el-dialog>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <!--门头照片、收银台照片-->
+      <el-row>
+        <el-col :sm="23" :md="{span: 10, offset: 1}">
+          <el-form-item label="门头照片：" prop="doorImg">
+            <el-upload
+              class="upload-demo"
+              name="doorImg"
+              list-type="picture-card"
+              :on-preview="photoPreview"
+              :action="uploadInterface"
+              :on-success="uploadDoorImg"
+              :on-remove="removeDoorImg"
+              :before-upload='checkFile'
+              :disabled='disabled || doorUnable'>
+              <i class="el-icon-plus"></i>
+              <div slot="tip" class="el-upload__tip">只能上传一个jpg/png文件，且不超过2M</div>
+            </el-upload>
+
+            <el-dialog v-model="showDialog" size="tiny">
+              <img width="100%" :src="photoOriginalDir" alt="">
+            </el-dialog>
+          </el-form-item>
+        </el-col>
+
+        <el-col :sm="23" :md="{span: 10, offset: 2}">
+          <el-form-item label="收银台照片：" prop="cashierImg">
+            <el-upload
+              class="upload-demo"
+              name="cashierImg"
+              list-type="picture-card"
+              :on-preview="photoPreview"
+              :action="uploadInterface"
+              :on-success="uploadCashierImg"
+              :on-remove="removeCashierImg"
+              :before-upload='checkFile'
+              :disabled='disabled || cashierUnable'>
+              <i class="el-icon-plus"></i>
+              <div slot="tip" class="el-upload__tip">只能上传一个jpg/png文件，且不超过2M</div>
+            </el-upload>
+
+            <el-dialog v-model="showDialog" size="tiny">
+              <img width="100%" :src="photoOriginalDir" alt="">
+            </el-dialog>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-form-item>
+        <div>
+          <div v-if="showBtn">
+            <el-button @click="back()">返回</el-button>
+            <el-button type="primary" @click="editChannel()">编辑</el-button>
+          </div>
+
+          <div v-else>
+            <el-button @click="cancel()">取消</el-button>
+            <el-button type="primary" @click="submitForm('mchnt')">保存</el-button>
+          </div>
+        </div>
+      </el-form-item>
+    </el-form>
+  </div>
+</template>
+
+<script>
+  import ApiService from '@/services/API-servies'
+  import {mapActions, mapGetters} from 'vuex'
+  const BASE = process.env.API_ROOT;
+  export default {
+    data() {
+      return {
+        insMchnt: {
+          insId: '',
+          channelCode: '',
+          mchntCode: '',
+          mchntName: '',
+          businessId: '',
+          mchntShortName: '',
+          regionCode: '',
+          address: '',
+          name: '',
+          mchntPhone: '',
+          cardType: '',
+          cardNo: '',
+          certType: '',
+          certNo: '',
+          mobile: '',
+          location: '',
+          certCorrect: '',
+          certOpposite: '',
+          certMeet: '',
+          cardCorrect: '',
+          cardOppsite: '',
+          blImg: '',
+          doorImg: '',
+          cashierImg: ''
+        },
+        insList: [],
+//        mccType: [],
+        mccList: [],
+        cityCodes: [],
+        regionCodes: [],
+        cityList: [],
+        certList: [],
+        certOppoList: [],
+        showBtn: true,
+        disabled: true,
+        readonly: true,
+        provinceStatus: false,
+        showDialog: false,
+        photoOriginalDir: '',
+        certUnable: false,
+        certOppUnable: false,
+        cardUnable: false,
+        cardOppUnable: false,
+        meetUnable: false,
+        blImgUnable: false,
+        doorUnable: false,
+        cashierUnable: false,
+        uploadInterface: ApiService.hfInsMchnt.uploadPhotos,
+        formRules: {
+          insId: {required: true, message: '请选择所属通道机构！', trigger: 'change'},
+          channelCode: {required: true, message: '请选择所属通道机构！', trigger: 'change'},
+          mchntCode: [
+          	{required: true, message: '请输入通道商户编号！', trigger: 'blur' },
+//            {pattern: /^[1-9]\d{7}$/, message: '请输入首位不为0的8位数字！', trigger: 'blur'}
+//            {pattern: /^1[3|4|5|7|8]\d{9}$/, message: '请输入正确的手机号码！', trigger: 'blur'}
+          ],
+          mchntName: [
+            {required: true, message: '请输入通道商户名称！', trigger: 'blur'},
+            {pattern: /^([\u4E00-\u9FA5]|\w){0,20}$/, message: '请输入中文、字母、数字或下划线(至多20位)', trigger: 'blur'}
+          ],
+          mchntShortName: [
+            {required: true, message: '请输入通道商户简称！', trigger: 'blur'},
+            {pattern: /^([\u4E00-\u9FA5]|\w){0,8}$/, message: '请输入中文、字母、数字或下划线(至多8位)', trigger: 'blur'}
+          ],
+          address: [
+            {pattern: /^([\u4E00-\u9FA5]|\w){0,50}$/, message: '请输入中文、字母、数字或下划线(至多50位)', trigger: 'blur'}
+          ],
+          name: [
+            {pattern: /^([\u4E00-\u9FA5]|\w){0,20}$/, message: '请输入中文、字母、数字或下划线(至多20位)', trigger: 'blur'}
+          ],
+          mchntPhone: [
+            {required: true, message: '请输入联系电话！', trigger: 'blur'},
+            {pattern: /^1[3|4|5|7|8]\d{9}$/, message: '请输入正确的手机号码！', trigger: 'blur'}
+          ],
+          parentMccId: {required: true, message: '请选择商户类别！', trigger: 'change'},
+          businessId: {required: true, message: '请选择商户MCC！', trigger: 'change'},
+          regionCode: {required: true, message: '请选择区域编码！', trigger: 'change'},
+          cardType: {required: true, message: '请选择卡类型！', trigger: 'change'},
+          cardNo: [
+            {required: true, message: '请输入卡号！', trigger: 'blur'},
+            {pattern: /^\d{19}$/, message: '请输入数字(19位)', trigger: 'blur'}
+          ],
+          certType: {required: true, message: '请选择证件类型！', trigger: 'change'},
+          certNo: [
+            {required: true, message: '请输入卡号！', trigger: 'blur'},
+            {pattern: /^\d{18}$/, message: '请输入数字(18位)', trigger: 'blur'}
+          ],
+          /*accountName: [
+            {required: true, message: '请输入结算户名！', trigger: 'blur'},
+            {pattern: /^([\u4E00-\u9FA5]|\w|\·){0,20}$/, message: '请输入中文、字母或"·"(至多20位)！', trigger: 'blur'}
+          ],
+          account: [
+            {required: true, message: '请输入结算账号！', trigger: 'blur'},
+            {pattern: /^\d{0,30}$/, message: '请输入数字(至多30位)！', trigger: 'blur'}
+          ],*/
+          mobile: [
+            {required: true, message: '请输入开户手机号码！', trigger: 'blur'},
+            {pattern: /^1[3|4|5|7|8]\d{9}$/, message: '请输入正确的手机号码！', trigger: 'blur'}
+          ],
+          location: {required: true, message: '请选择开户城市！', trigger: 'change'},
+        }
+      }
+    },
+    mounted() {
+      this.getData();
+      this.getregionCodeList();
+      this.getMccTypes();
+    },
+    filters: {
+      stringNumber(val) {
+        return val.toString();
+      }
+    },
+    computed:{
+      ...mapGetters(['getRegion', 'getProvinceCodes', 'getCityCodes', 'getRegionCodes', 'getMccCodes']),
+      provinceList: function (){
+        return this.getRegion;
+      },
+      provinceCodes: function (){
+        return this.getProvinceCodes;
+      }
+      ,
+      mccType: function (){
+        return this.getMccCodes;
+      }
+    },
+    methods: {
+      ...mapActions(['getregionCodeList', 'getMccTypes']),
+    	getData() {
+    		let _this = this;
+    		let postData = {insMchntId: _this.$route.query.mchntId};
+        _this.$nextTick(()=> {
+        	// 获取通道机构列表信息
+          ApiService.common.insList().then(data => {
+            _this.insList = data.data;
+          });
+
+          // 获取商户类别信息
+          /*ApiService.hfInsMchnt.mccList().then(data => {
+            _this.mccType = data.data;
+          });*/
+
+          // 获取通道商户详情信息
+          ApiService.hfInsMchnt.detail(postData).then(data => {
+            _this.insMchnt = data.data;
+            // 部分数据初始化
+            _this.insMchnt.insId = _this.insMchnt.insId ? _this.insMchnt.insId + '' : '';
+            _this.insMchnt.channelCode = _this.insMchnt.channelCode ? _this.insMchnt.channelCode : '';
+            _this.insMchnt.parentMccId = _this.insMchnt.parentMccId ? _this.insMchnt.parentMccId + '': '';
+            _this.insMchnt.businessId = _this.insMchnt.businessId ? _this.insMchnt.businessId + '' : '';
+            _this.insMchnt.proviceRegionId = _this.insMchnt.proviceRegionId ? _this.insMchnt.proviceRegionId + '': '';
+            _this.insMchnt.cityRegionId = _this.insMchnt.cityRegionId ? _this.insMchnt.cityRegionId + '': '';
+            _this.insMchnt.regionCode = _this.insMchnt.regionCode ? _this.insMchnt.regionCode : '';
+            _this.insMchnt.cardType = _this.insMchnt.cardType ? _this.insMchnt.cardType + '' : '';
+            _this.insMchnt.certType = _this.insMchnt.certType ? _this.insMchnt.certType : '';
+            _this.insMchnt.provinceId = _this.insMchnt.provinceId ? _this.insMchnt.provinceId + '' : '';
+            _this.insMchnt.location = _this.insMchnt.location ? _this.insMchnt.location : '';
+            if(!!_this.insMchnt.certCorrect) {
+              _this.certList.push(
+                {url: `${ApiService.hfInsMchnt.previewPhotos}?certCorrect=${_this.insMchnt.certCorrect}`}
+              );
+            }
+
+            if(!!_this.insMchnt.certOpposite) {
+              _this.certOppoList.push(
+                {url: `${ApiService.hfInsMchnt.previewPhotos}?certOpposite=${_this.insMchnt.certOpposite}`}
+              );
+            }
+            /*_this.certList.push(
+              {url: _this.insMchnt.certCorrect ? _this.insMchnt.certCorrect : ''}
+            );*/
+            /*_this.certOppoList.push({url: _this.insMchnt.certOpposite ? _this.insMchnt.certOpposite : ''
+            });*/
+          });
+        })
+      },
+      mccChange() {
+        let _this = this;
+        _this.mccList = [];
+        for(let i = 0, len = _this.mccType.length; i < len; i++) {
+          if(_this.mccType[i].hfMccId === _this.insMchnt.parentMccId * 1) {
+            _this.mccList = _this.mccType[i].secondMcc;
+          }
+        }
+      },
+      provinceChange() {
+        let _this = this;
+        _this.cityCodes = [];
+        for(let i = 0, len = _this.provinceCodes.length; i < len; i++) {
+          if(_this.provinceCodes[i].regionCodeId === _this.insMchnt.proviceRegionId * 1) {
+            _this.cityCodes = _this.provinceCodes[i].cityCodes;
+          }
+        }
+
+        // 判断省份下拉菜单开启状态
+        if(this.provinceStatus) {
+          _this.insMchnt.cityRegionId = '';
+          _this.insMchnt.regionCode = '';
+        }
+      },
+      cityChange() {
+        let _this = this;
+        _this.regionCodes = [];
+        for(let i = 0, len = _this.cityCodes.length; i < len; i++) {
+          if(_this.cityCodes[i].regionCodeId === _this.insMchnt.cityRegionId * 1) {
+            _this.regionCodes = _this.cityCodes[i].districtCodes;
+          }
+        }
+      },
+      originalProvince() {
+        let _this = this;
+        _this.cityList = [];
+        for(let i = 0, len = _this.provinceList.length; i < len; i++) {
+          if(_this.provinceList[i].id === _this.insMchnt.provinceId * 1) {
+            _this.cityList = _this.provinceList[i].cityList;
+          }
+        }
+      },
+      provinceClick(val) {
+        this.provinceStatus = val;
+      },
+      checkFile(file) {
+        const isJPG = file.type === 'image/jpeg';
+        const isPNG = file.type === 'image/png';
+        const fileSize = file.size / 1024 / 1024 < 2;
+
+        if (!isJPG && !isPNG) {
+          this.$message.warning('图片只支持JPG/PNG格式！')
+        }
+        if (!fileSize) {
+          this.$message.warning('图片大小不能超过2MB！')
+        }
+        return (isJPG && fileSize) || (isPNG && fileSize) ;
+      },
+      photoPreview(file) {
+        this.photoOriginalDir = file.url;
+        this.showDialog = true;
+      },
+      uploadCert(file, fileList) {
+        this.insMchnt.certCorrect = file.data;
+        this.certUnable = true;
+        console.log(this.insMchnt.certCorrect);
+      },
+      removeCert(file){
+        this.insMchnt.certCorrect = '';
+        this.certUnable = false;
+      },
+      uploadCertOpposite(file, fileList) {
+        this.insMchnt.certOpposite = file.data;
+        this.certOppUnable = true;
+        console.log(this.insMchnt.certOpposite);
+      },
+      removeCertOpposite(file){
+        this.insMchnt.certOpposite = '';
+        this.certOppUnable = false;
+      },
+      uploadCardCorrect(file, fileList) {
+        this.insMchnt.cardCorrect = file.data;
+        this.cardUnable = true;
+      },
+      removeCardCorrect(file){
+        this.insMchnt.cardCorrect = '';
+        this.cardUnable = false;
+      },
+      uploadCardOppsite(file, fileList) {
+        this.insMchnt.cardOppsite = file.data;
+        this.cardOppUnable = true;
+      },
+      removeCardOppsite(file){
+        this.insMchnt.cardOppsite = '';
+        this.cardOppUnable = false;
+      },
+      uploadCertMeet(file, fileList) {
+        this.insMchnt.certMeet = file.data;
+        this.meetUnable = true;
+      },
+      removeCertMeet(file){
+        this.insMchnt.certMeet = '';
+        this.meetUnable = false;
+      },
+      uploadBlImg(file, fileList) {
+        this.insMchnt.blImg = file.data;
+        this.blImgUnable = true;
+      },
+      removeBlImg(file){
+        this.insMchnt.blImg = '';
+        this.blImgUnable = false;
+      },
+      uploadDoorImg(file, fileList) {
+        this.insMchnt.doorImg = file.data;
+        this.doorUnable = true;
+      },
+      removeDoorImg(file){
+        this.insMchnt.doorImg = '';
+        this.doorUnable = false;
+      },
+      uploadCashierImg(file, fileList) {
+        this.insMchnt.cashierImg = file.data;
+        this.cashierUnable = true;
+      },
+      removeCashierImg(file){
+        this.insMchnt.cashierImg = '';
+        this.cashierUnable = false;
+      },
+      back() {
+        this.$router.push('/hfInsMchnt');
+      },
+      editChannel() {
+        this.showBtn = false;
+        this.editAble = false;
+        this.readonly = false;
+        this.disabled = false;
+      },
+      cancel() {
+        this.showBtn = true;
+        this.editAble = true;
+        this.readonly = true;
+        this.disabled = true;
+      },
+      submitForm(formName) {
+        let _this = this;
+        _this.$refs[formName].validate(valid => {
+          // 组织提交数据
+          let postData = {
+            hfMchntId: _this.insMchnt.hfMchntId,
+            insId: _this.insMchnt.insId,
+            channelCode: _this.insMchnt.channelCode,
+            mchntCode: _this.insMchnt.mchntCode,
+            mchntName: _this.insMchnt.mchntName,
+            businessId: _this.insMchnt.businessId * 1,
+            mchntShortName: _this.insMchnt.mchntShortName,
+            regionCode: _this.insMchnt.regionCode,
+            address: _this.insMchnt.address,
+            name: _this.insMchnt.name,
+            mchntPhone: _this.insMchnt.mchntPhone,
+            cardType: _this.insMchnt.cardType * 1,
+            cardNo: _this.insMchnt.cardNo,
+            certType: _this.insMchnt.certType,
+            certNo: _this.insMchnt.certNo,
+            mobile: _this.insMchnt.mobile,
+            location: _this.insMchnt.location,
+            certCorrect: _this.insMchnt.certCorrect,
+            certOpposite: _this.insMchnt.certOpposite,
+            certMeet: _this.insMchnt.certMeet,
+            cardCorrect: _this.insMchnt.cardCorrect,
+            cardOppsite: _this.insMchnt.cardOppsite,
+            blImg: _this.insMchnt.blImg,
+            doorImg: _this.insMchnt.doorImg,
+            cashierImg: _this.insMchnt.cashierImg
+          };
+
+          if(valid) {
+            ApiService.hfInsMchnt.syncMerch(postData).then(data => {
+              if(data.code === 0) {
+                _this.$message({
+                  type: 'success',
+                  message: '通道商户同步成功！',
+                  duration: 1000,
+                  onClose() {
+                    _this.$router.push({path: 'hfInsMchnt'});
+                  }
+                });
+              }else {
+                _this.$message({
+                  type: 'warning',
+                  message: data.message
+                });
+
+                return false;
+              }
+            });
+          }
+        })
+      }
+    }
+  }
+</script>
+
+<style lang="less" scoped>
+
+</style>

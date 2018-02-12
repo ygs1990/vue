@@ -1,0 +1,107 @@
+<template>
+  <div class="content">
+    <el-form   label-width="120px" class="demo-form-inline">
+        <el-row>
+          <el-col :lg="{span:10}" :md="{span:12}" :sm="{span:18}" :xs="{span:24}">
+            <el-form-item label="代理商" >
+              <el-col :span="20">
+                <el-input v-model="formData1.agentCodeName" :disabled="true"></el-input>
+              </el-col>
+            </el-form-item>
+          </el-col>
+          <el-col :lg="{span:10}" :md="{span:12}" :sm="{span:18}" :xs="{span:24}">
+            <el-form-item label="对账模板" >
+              <el-col :span="20">
+                <el-input v-model="formData1.modelName" :disabled="true"></el-input>
+              </el-col>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :lg="{span:10}" :md="{span:12}" :sm="{span:18}" :xs="{span:24}">
+            <el-form-item label="用户名" >
+              <el-col :span="20">
+                <el-input v-model="formData1.ftpAccount" :disabled="true" ></el-input>
+              </el-col>
+            </el-form-item>
+          </el-col>
+          <el-col :lg="{span:10}" :md="{span:12}" :sm="{span:18}" :xs="{span:24}">
+            <el-form-item label="密码" >
+              <el-col :span="20">
+                <el-input v-model="formData1.ftpPwd" :disabled="true"></el-input>
+              </el-col>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :lg="{span:10}" :md="{span:12}" :sm="{span:18}" :xs="{span:24}">
+            <el-form-item label="SFTP目录" >
+              <el-col :span="20">
+                <el-input v-model="formData1.sftpAdress"  :disabled="true"></el-input>
+              </el-col>
+            </el-form-item>
+          </el-col>
+          <el-col :lg="{span:10}" :md="{span:12}" :sm="{span:18}" :xs="{span:24}">
+            <el-form-item label="对账周期" >
+              <el-col :span="20">
+                <el-input v-model="formData1.periodName" :disabled="true" ></el-input>
+              </el-col>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :lg="{span:10}" :md="{span:12}" :sm="{span:18}" :xs="{span:24}">
+            <el-form-item label="对账文件目录" prop="localDir">
+              <el-col :span="20">
+                <el-input v-model="formData1.localDir"  placeholder="/ 目录地址  " :disabled="true" ></el-input>
+              </el-col>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :lg="{span:2}" :md="{span:3}" :sm="{span: 4}" :xs="{span:6}">
+            <el-button class="btn" @click="onCance('formData1')">返回</el-button>
+          </el-col>
+        </el-row>
+      </el-form>
+  </div>
+</template>
+
+<script type="text/ecmascript-6">
+  import ApiService from '@/services/API-servies'
+  export default {
+    data() {
+      return {
+        formData1:{
+          agentCodeName:'',
+          modelName:'',
+          periodName:'',
+          ftpAccount:'',
+          ftpPwd:'',
+          sftpAdress:'',
+          localDir:'',
+        },
+      }
+    },
+    created() {
+      let self=this;
+      let agentCountId = self.$route.query.agentCount;
+      ApiService.actCheck.agentFtpDetail({id:agentCountId}).then(res => {
+        self.formData1=res.data;
+        self.formData1.agentCodeName=self.formData1.agentCode+' - '+self.formData1.agentName;
+      });
+    },
+    methods: {
+      onCance(formData) {
+//        this.$refs[formData].resetFields();
+        this.$router.push('/agentFtp');
+      }
+    }
+  }
+
+</script>
+
+<style lang="less" scoped>
+  @import "../../../less/modules/base.less";
+</style>
+

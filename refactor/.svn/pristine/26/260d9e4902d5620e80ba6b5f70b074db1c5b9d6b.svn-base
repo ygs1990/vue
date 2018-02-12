@@ -1,0 +1,14 @@
+export const commitRegionMutation = {
+  ['GIT_REGION'] (state,info) {
+    state.region = info;
+  },
+  ['GIT_SIDE'] (state,info) {
+    state.side = info;
+  },
+  ['MOD_REGIONCODES'] (state,info) {
+    state.provinceCodes = info.provinceCodes;
+  },
+  ['GET_MCCTYPES'] (state,info) {
+    state.mccType = info;
+  }
+};

@@ -1,0 +1,282 @@
+import Http from 'axios'
+import API from '@/config/API-config'
+Http.defaults.headers.post['Content-Type'] = "application/json;charset=utf-8"; // json格式传输数据
+Http.defaults.withCredentials=true;
+// delete $httpProvider.default.headers.common['X-Requested-With'];
+// Http.defaults.headers.post['Content-Type'] = "application/x-www-form-urlencoded;charset=UTF-8"; //formdata格式传输数据
+//Http.defaults.headers.common['X-Requested-With']="XMLHttpRequest";
+
+
+const encodeParams = (params) => {
+    let r = '?',
+        p = [];
+    for(let key in params) {
+        p.push(`${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`);
+    }
+    return r + p.join('&&');
+};
+
+//请求类
+class ApiService {
+  constructor() {
+    //登录/获取侧边栏接口
+    this.login = {
+      login: this.post.bind(this, API.LOGIN.login),
+      listMenu: this.post.bind(this, API.LOGIN.listMenu),
+    };
+
+    //机构管理接口
+    this.agency = {
+      agencyList: this.post.bind(this, API.AGENCY.agencyList),//代理商列表
+      istBusinessInfo:this.post.bind(this,API.AGENCY.istBusinessInfo),//
+      findAgentNameOrCode:this.post.bind(this,API.AGENCY.findAgentNameOrCode),//模糊查询代理商列表
+      resetPwdAgent:this.post.bind(this,API.AGENCY.resetPwdAgent),//重置代理商密码
+      reBlockeAgent: this.post.bind(this, API.AGENCY.reBlockeAgent),//冻结解冻代理商
+      detailAgent: this.post.bind(this, API.AGENCY.detailAgent),//获取代理商详情
+      saveAgent:this.post.bind(this,API.AGENCY.saveAgent),//新增代理商
+      findAgentTx:this.post.bind(this,API.AGENCY.findAgentTx),//查询代理商支持交易权限
+      uptAgent:this.post.bind(this,API.AGENCY.uptAgent),//详情修改代理商
+    };
+
+    //商户管理接口
+    this.mchnt = {
+      pageMchnt:this.post.bind(this,API.MCHNT.pageMchnt),//商户列表
+      findMchntNameOrCode:this.post.bind(this,API.MCHNT.findMchntNameOrCode),//模糊查找商户列表
+      reBlockeMchnt:this.post.bind(this,API.MCHNT.reBlockeMchnt),//冻结解冻商户
+      reMchntKey:this.post.bind(this,API.MCHNT.reMchntKey),//重置商户秘钥
+      saveMchnt:this.post.bind(this,API.MCHNT.saveMchnt),//新增商户
+      detailMchnt:this.post.bind(this,API.MCHNT.detailMchnt),//商户详情
+      findMchntTxByMchntId:this.post.bind(this,API.MCHNT.findMchntTxByMchntId),//获取商户交易权限
+      findImg:this.post.bind(this,API.MCHNT.findImg),//预览图片
+      uptMchnt:this.post.bind(this,API.MCHNT.uptMchnt),//修改商户商户
+      uploadjpg:API.MCHNT.uploadjpg,//上传图片
+    };
+
+    // 商户路由
+    this.mchntRoute = {
+      mchntRouteList:this.post.bind(this,API.MchntRoute.mchntRouteList),
+      mchnRoutetDetail:this.post.bind(this,API.MchntRoute.mchnRoutetDetail),
+      insMchntByParams:this.post.bind(this,API.MchntRoute.InsMchntByParams),
+      bankByParams:this.post.bind(this,API.MchntRoute.BankByParams),
+      saveMchntRoute:this.post.bind(this,API.MchntRoute.saveMchntRoute),
+
+    }
+
+    // 商户余额管理
+    this.mchntAccount = {
+      mchntAccountList:this.post.bind(this,API.MchntAccount.mchntAccountList),
+      initMchntAccountList:this.post.bind(this,API.MchntAccount.initMchntAccountList),
+      mchntList:this.post.bind(this,API.MchntAccount.mchntList),
+    }
+
+    // 商户管理 商户手工调额管理
+    this.mchntAccountTmp = {
+      mchntBusinessList : this.post.bind(this,API.MchntAccountTmp.mchntBusinessList),
+      merManuAdjAdd : this.post.bind(this,API.MchntAccountTmp.MerManuAdjAdd),
+      mchntAccountTmpDetail : this.post.bind(this,API.MchntAccountTmp.mchntAccountTmpDetail),
+      mchntAccountList : this.post.bind(this,API.MchntAccountTmp.mchntAccountList),
+      pageCheckMchntList : this.post.bind(this,API.MchntAccountTmp.pageCheckMchntList),
+      checkMchntAccountTmp : this.post.bind(this,API.MchntAccountTmp.checkMchntAccountTmp),
+    }
+
+    //批量代付接口
+    this.batchPay = {
+      pageOrderBatch:this.post.bind(this,API.BATCHPAY.pageOrderBatch),//商户列表
+      orderBatchDetail:this.post.bind(this,API.BATCHPAY.orderBatchDetail),//商户列表
+      checkOrderBatch:this.post.bind(this,API.BATCHPAY.checkOrderBatch),//审核
+      upLoadBatchExcel:API.BATCHPAY.upLoadBatchExcel,//上传excel
+      downloadOrderBatchFile:API.BATCHPAY.downloadOrderBatchFile,//下载原始文件
+      pageOrders:this.post.bind(this,API.BATCHPAY.pageOrders),//原始文件明细
+    };
+
+    // 用户模块后台API接口(共10个)
+    this.user = {
+      userList: this.post.bind(this, API.USER.userList),
+      query: this.post.bind(this, API.USER.query),
+      create: this.post.bind(this, API.USER.create),
+      detail: this.post.bind(this, API.USER.detail),
+      update: this.post.bind(this, API.USER.update),
+      delete: this.post.bind(this, API.USER.delete),
+      lock: this.post.bind(this, API.USER.lock),
+      listRole: this.post.bind(this, API.USER.listRole),
+      assignRole: this.post.bind(this, API.USER.assignRole),
+      availableRole: this.post.bind(this, API.USER.availableRole),
+      resetPassword: this.post.bind(this, API.USER.resetPassword)
+    };
+
+    // 组织模块后台API接口(共7个)
+    this.org = {
+      orgList: this.post.bind(this, API.ORG.orgList),
+      detail: this.post.bind(this, API.ORG.detail),
+      delete: this.post.bind(this, API.ORG.delete),
+      assignRole: this.post.bind(this, API.ORG.assignRole),
+      createOrgWithRole: this.post.bind(this, API.ORG.createOrgWithRole),
+      updateOrgWithRole: this.post.bind(this, API.ORG.updateOrgWithRole),
+      createUserWithRole: this.post.bind(this, API.ORG.createUserWithRole)
+    };
+
+    // 角色模块后台API接口(共9个)
+    this.role = {
+      roleList: this.post.bind(this, API.ROLE.roleList),
+      create: this.post.bind(this, API.ROLE.create),
+      detail: this.post.bind(this, API.ROLE.detail),
+      update: this.post.bind(this, API.ROLE.update),
+      delete: this.post.bind(this, API.ROLE.delete),
+      assignResource: this.post.bind(this, API.ROLE.assignResource),
+      orgRoleList: this.post.bind(this, API.ROLE.orgRoleList),
+      parentRoleList: this.post.bind(this, API.ROLE.parentRoleList),
+      roleResourceID: this.post.bind(this, API.ROLE.roleResourceID),
+    };
+
+    // 通道管理模块后台API接口(共6个)
+    this.channel = {
+      channelList: this.post.bind(this, API.CHANNEL.channelList),
+      add: this.post.bind(this, API.CHANNEL.add),
+      detail: this.post.bind(this, API.CHANNEL.detail),
+      update: this.post.bind(this, API.CHANNEL.update),
+      freeze: this.post.bind(this, API.CHANNEL.freeze),
+      unfreeze: this.post.bind(this, API.CHANNEL.unfreeze)
+    };
+
+    // 通道机构管理模块后台API接口(共6个)
+    this.ins = {
+      insList: this.post.bind(this, API.INS.insList),
+      add: this.post.bind(this, API.INS.add),
+      detail: this.post.bind(this, API.INS.detail),
+      update: this.post.bind(this, API.INS.update),
+      freeze: this.post.bind(this, API.INS.freeze),
+      unfreeze: this.post.bind(this, API.INS.unfreeze)
+    };
+
+    // 通道商户管理模块后台API接口(共9个)
+    this.insMchnt = {
+      insMchntList: this.post.bind(this, API.INSMCHNT.insMchntList),
+      add: this.post.bind(this, API.INSMCHNT.add),
+      detail: this.post.bind(this, API.INSMCHNT.detail),
+      update: this.post.bind(this, API.INSMCHNT.update),
+      freeze: this.post.bind(this, API.INSMCHNT.freeze),
+      unfreeze: this.post.bind(this, API.INSMCHNT.unfreeze),
+      insBusinessList: this.post.bind(this, API.INSMCHNT.insBusinessList),
+      insFeeList: this.post.bind(this, API.INSMCHNT.insFeeList),
+      uploadExcel: API.INSMCHNT.uploadExcel
+    };
+
+    // 恒丰通道商户管理模块后台API接口(共10个)
+    this.hfInsMchnt = {
+      insMchntList: this.post.bind(this, API.HFINSMCHNT.insMchntList),
+      merchEnroll: this.post.bind(this, API.HFINSMCHNT.merchEnroll),
+      downloadKey: this.post.bind(this, API.HFINSMCHNT.downloadKey),
+      detail: this.post.bind(this, API.HFINSMCHNT.detail),
+      syncMerch: this.post.bind(this, API.HFINSMCHNT.syncMerch),
+      rateDetail: this.post.bind(this, API.HFINSMCHNT.rateDetail),
+      syncRate: this.post.bind(this, API.HFINSMCHNT.syncRate),
+      getHFInsMchntProperties: this.post.bind(this, API.HFINSMCHNT.getHFInsMchntProperties),
+      mccList: this.post.bind(this, API.HFINSMCHNT.mccList),
+      regionList: this.post.bind(this, API.HFINSMCHNT.regionList),
+      uploadPhotos: API.HFINSMCHNT.uploadPhotos
+    };
+
+    // 交易管理
+    this.translog = {
+      sumTxCount : this.post.bind(this,API.TRANSLOG.sumTxCount),
+      list : this.post.bind(this,API.TRANSLOG.list),
+      recordDetail : this.post.bind(this,API.TRANSLOG.RecordDetail),
+      sumTxCount : this.post.bind(this,API.TRANSLOG.sumTxCount),
+      hisDetail : this.post.bind(this,API.TRANSLOG.HisDetail),
+      errorList : this.post.bind(this,API.TRANSLOG.errorList),
+    };
+
+    // 通用查询接口后台API接口(共17个)
+    this.common = {
+      orgList: this.post.bind(this, API.COMMON.orgList),
+      roleList: this.post.bind(this, API.COMMON.roleList),
+      checkCode:this.post.bind(this,API.COMMON.checkCode),
+      region:this.post.bind(this,API.COMMON.region),
+      appType:this.post.bind(this,API.COMMON.appType),
+      mccList:this.post.bind(this,API.COMMON.mccList),
+      agentList:this.post.bind(this,API.COMMON.agentList),
+      mchntList:this.get.bind(this,API.COMMON.mchntList),
+      channelList:this.post.bind(this,API.COMMON.channelList),
+      insList:this.post.bind(this,API.COMMON.insList),
+      insMchntList:this.post.bind(this,API.COMMON.insMchntList),
+      hfInsMchntList:this.post.bind(this,API.COMMON.hfInsMchntList),
+      businessList:this.post.bind(this,API.COMMON.businessList),
+      acquireBankList:this.post.bind(this,API.COMMON.acquireBankList),
+      byMchntCode:this.post.bind(this,API.COMMON.ByMchntCode),
+      resultNames:this.post.bind(this,API.COMMON.resultNames),
+      errorTypes:this.post.bind(this,API.COMMON.ErrorTypes),
+      modelList:this.post.bind(this,API.COMMON.ModelList),
+      channelAndInsList:this.post.bind(this,API.COMMON.ChannelAndInsList),
+      actAgentList:this.post.bind(this,API.COMMON.actAgentList),
+    };
+
+    // 对账管理 所有接口
+    this.actCheck = {
+      addInsFtp : this.post.bind(this,API.ActCheck.addInsFtp),
+      insFtpDetail : this.post.bind(this,API.ActCheck.insFtpDetail),
+      editInsFtp : this.post.bind(this,API.ActCheck.editInsFtp),
+      deleteInsFtp : this.post.bind(this,API.ActCheck.deleteInsFtp),
+      insFtpList : this.post.bind(this,API.ActCheck.InsFtpList),
+      addAgentFtp : this.post.bind(this,API.ActCheck.addAgentFtp),
+      agentFtpDetail : this.post.bind(this,API.ActCheck.agentFtpDetail),
+      editAgentFtp : this.post.bind(this,API.ActCheck.editAgentFtp),
+      deleteAgentFtp : this.post.bind(this,API.ActCheck.deleteAgentFtp),
+      pageAgentFtpList : this.post.bind(this,API.ActCheck.pageAgentFtpList),
+      checkStatus : this.post.bind(this,API.ActCheck.checkStatus),
+      pageInsAccountCheckList : this.post.bind(this,API.ActCheck.pageInsAccountCheckList),
+      insAccountCheckDetail : this.post.bind(this,API.ActCheck.insAccountCheckDetail),
+      dataCollect : this.post.bind(this,API.ActCheck.dataCollect),
+      accountCheck : this.post.bind(this,API.ActCheck.accountCheck),
+      produceAccountCheck : this.post.bind(this,API.ActCheck.produceAccountCheck),
+      agentAndModel : this.post.bind(this,API.ActCheck.AgentAndModel),
+      downloadAccountCheck : API.ActCheck.downloadAccountCheck,//对账文件下载
+    };
+
+    this.interceptorsOfReq();
+    this.interceptorsOfRes();
+  }
+
+  get(url, params) {
+    if(params) {
+      url += encodeParams(params);
+      // url += `&JSID=${localStorage.sessionid}&userID=${localStorage.user? JSON.parse(localStorage.user).userID :''}`;
+    }
+    return Http.get(url).then(res => res.data);
+  }
+
+  post(url, data) {
+    typeof data === 'undefined' ? data = {} : '';
+    data = JSON.stringify(data);
+    return Http.post(url, data).then(res => res.data);
+    // localStorage.sessionid ? data.JSID = localStorage.sessionid : '';
+    // data.userID = localStorage.user ? JSON.parse(localStorage.user).userID : '';
+  }
+
+  interceptorsOfReq() {
+    return Http.interceptors.request.use(
+      config => {
+        return config;
+      },
+      err => {
+        return Promise.reject(err);
+      });
+  }
+
+  interceptorsOfRes() {
+    Http.interceptors.response.use(function(response) {
+      if(response.data.errorCode === 4) {
+        localStorage.removeItem('sessionid');
+        localStorage.removeItem('user');
+        alert('登录失效，请重新登录！！！');
+        vueVm.loginPopFlag=true;
+      }
+      return response;
+    }, function(error) {
+      return Promise.reject(error);
+    });
+  }
+
+}
+
+//导出一个对象
+export default new ApiService();

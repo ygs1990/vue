@@ -1,0 +1,2 @@
+@import './modules/login.less';
+@import './modules/foot.less';

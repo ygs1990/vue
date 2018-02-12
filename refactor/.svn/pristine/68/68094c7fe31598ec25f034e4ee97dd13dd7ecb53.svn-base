@@ -1,0 +1,14 @@
+export const queryRegionGetter = {
+  getRegion (state) {
+    return state.region
+  },
+  getSide (state) {
+    return state.side
+  },
+  getProvinceCodes (state) {
+    return state.provinceCodes
+  },
+  getMccCodes (state) {
+    return state.mccType
+  }
+};

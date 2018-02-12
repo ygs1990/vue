@@ -1,0 +1,191 @@
+<template>
+  <div class="content">
+    <el-form :model="ins" ref="ins" label-width="90px">
+      <el-row>
+        <el-col :xs="12" :sm="{span: 12}">
+          <el-form-item label="通道机构：" prop="code">
+            <el-select v-model.trim="ins.code" filterable clearable placeholder="请输入关键字">
+              <el-option
+                v-for="channel in channels"
+                :key="channel.code"
+                :label="channel.name +'--'+ channel.code"
+                :value="channel.code">
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+
+        <el-col :xs="{span: 10, offset: 2}" :sm="{span: 9, offset: 2}" style="text-align: right">
+          <el-button type="primary" @click="userQuery(ins.code)">搜索</el-button>
+          <el-button @click="formReset('ins')">清除</el-button>
+        </el-col>
+      </el-row>
+    </el-form>
+
+    <div class="new">
+      <router-link to="/newIns" ><el-button type="success">新增通道机构</el-button></router-link>
+    </div>
+
+    <div>
+      <el-table :data="insList" border style="width: 100%">
+        <el-table-column label="通道机构编号" prop="code" align="center"></el-table-column>
+
+        <el-table-column label="通道机构名称" prop="name" align="center"></el-table-column>
+
+        <el-table-column label="通道机构状态" prop="status" align="center" :formatter="statusFormat"></el-table-column>
+
+        <el-table-column label="创建时间" prop="createTime" align="center" :formatter="dateFormat"></el-table-column>
+
+        <el-table-column label="操作" align="center" width="150px">
+          <template scope="scope">
+            <el-button type="info" size="small" @click="insDetail(scope.$index, scope.row)">详情</el-button>
+            <el-button type="warning" size="small" @click="freezeIns(scope.$index, scope.row)">{{scope.row.operation}}</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div class="pager">
+        <el-pagination
+          :page-sizes="[10, 20, 30, 40]"
+          :page-size="pager.pageSize"
+          :current-page="pager.pageNo"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="pager.totalRows"
+          @size-change="sizeEvent"
+          @current-change="currentEvent">
+        </el-pagination>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script type="text/ecmascript-6">
+  import ApiService from '@/services/API-servies'
+  export default {
+    data () {
+      return {
+        insList: [],
+        pager: [],
+        channels: [],
+        ins: {
+          code: ''
+        }
+      }
+    },
+    mounted() {
+      let _this = this;
+      let postData = {pageNo: 1, pageSize: 10, code: ''};
+      // 获取通道机构列表数据
+      _this.getInsList(postData);
+    },
+    methods: {
+      getInsList(postData) {
+        let _this = this;
+        _this.$nextTick(function() {
+          ApiService.ins.insList(postData).then( data => {
+            // 用户列表数据
+            _this.insList = data.data;
+            // 表格分页
+            _this.pager = data;
+          } );
+
+          ApiService.common.insList().then( data => {
+            // 通道机构列表信息
+            _this.channels = data.data;
+          } )
+        });
+      },
+      userQuery(code) {
+        let postData = {pageNo: 1, pageSize: 10, code: code};
+        // 获取通道机构列表数据
+        this.getInsList(postData);
+      },
+      formReset(formName) {
+        this.$refs[formName].resetFields();
+      },
+      statusFormat(row, col) {
+        if(row.status === 1) {
+          row.operation = '关闭';
+          return '开启';
+        }else if(row.status === 0) {
+          row.operation = '开启';
+          return '关闭';
+        }else {
+          return '未知'
+        }
+      },
+      dateFormat(row, col) {
+        let time = row.createTime;
+        return this.$moment(time).format('YYYY-MM-DD HH:mm:ss');
+      },
+      insDetail(index, row) {
+        this.$router.push({path: 'insDetail', query: {insId: row.id}});
+      },
+      freezeIns(index, row) {
+        let _this = this;
+        _this.$confirm('是否确定'+ row.operation +'该通道机构？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          // 重置通道状态及操作
+          if(row.status === 1) {
+            ApiService.ins.freeze({id: row.id}).then( data => {
+              // 点击确定按钮时，弹出如下信息及操作
+              _this.$message({
+                type: 'success',
+                message: '通道机构'+ row.operation +'成功!',
+                duration: 1000,
+                onClose() {
+                  let postData = {pageNo: 1, pageSize: 10, code: ''};
+                  // 获取通道机构列表数据
+                  _this.getInsList(postData);
+                }
+              });
+
+              row.operation = '开启';
+            });
+          }else if(row.status === 0) {
+            ApiService.ins.unfreeze({id: row.id}).then( data => {
+              // 点击确定按钮时，弹出如下信息及操作
+              _this.$message({
+                type: 'success',
+                message: '通道机构'+ row.operation +'成功!',
+                duration: 1000,
+                onClose() {
+                  let postData = {pageNo: 1, pageSize: 10, code: ''};
+                  // 获取通道机构列表数据
+                  _this.getInsList(postData);
+                }
+              });
+
+              row.operation = '关闭';
+            });
+          }
+        }).catch(() => {
+          // 点击取消按钮时，弹出如下信息
+          _this.$message({
+            type: 'info',
+            message: '已取消'+ row.operation +'通道机构'
+          });
+        });
+      },
+      sizeEvent(pageSize) {
+        let _this = this;
+        let postData = {pageNo: 1, pageSize: pageSize, code: ''};
+        // 获取通道机构列表数据
+        _this.getInsList(postData);
+      },
+      currentEvent(page) {
+        let _this = this;
+        let postData = {pageNo: page, pageSize: 10, code: ''};
+        // 获取通道机构列表数据
+        _this.getInsList(postData);
+      }
+    }
+  }
+</script>
+
+<style lang="less" scoped>
+
+</style>

@@ -1,0 +1,168 @@
+<template>
+  <div>
+    <div class="content">
+      <el-form :model="mchnt" :rules="mchntRules" ref="mchnt" label-width="160px" >
+        <el-row>
+          <el-col :sm="23" :md="{span: 10, offset: 1}">
+            <el-form-item label="商户编号：" prop="mchntCode">
+              <el-input v-model.trim="mchnt.mchntCode" placeholder="必填" readonly></el-input>
+            </el-form-item>
+          </el-col>
+
+          <el-col :sm="23" :md="{span: 10, offset: 2}">
+            <el-form-item label="商户密码：" prop="mchntPassword">
+              <el-input v-model.trim="mchnt.mchntPassword" placeholder="必填" readonly></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :sm="23" :md="{span: 10, offset: 1}">
+            <el-form-item label="微信签约费率(‰)：" prop="weixinRateTemp">
+              <el-input v-model.trim="mchnt.weixinRateTemp" placeholder="必填"></el-input>
+            </el-form-item>
+          </el-col>
+
+          <el-col :sm="23" :md="{span: 10, offset: 2}">
+            <el-form-item label="支付宝签约费率(‰)：" prop="alipayRateTemp">
+              <el-input v-model.trim="mchnt.alipayRateTemp" placeholder="必填"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :sm="23" :md="{span: 10, offset: 1}">
+            <el-form-item label="支付通道：" prop="channelCode">
+            <!--<el-form-item label="支付通道：" prop="channelCode">-->
+              <el-select v-model.trim="mchnt.channelCode" placeholder="请选择" style="width: 100%" disabled>
+              <!--<el-select v-model.trim="channelCode" placeholder="请选择" style="width: 100%" disabled>-->
+                <el-option label="微信" value="wxpay"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+
+          <el-col :sm="23" :md="{span: 10, offset: 2}">
+            <el-form-item label="商户标识：" prop="cbzid">
+            <!--<el-form-item label="商户标识：" prop="cbzid">-->
+              <el-input v-model.trim="mchnt.cbzid" placeholder="必填" readonly></el-input>
+              <!--<el-input v-model.trim="cbzid" placeholder="必填" readonly></el-input>-->
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item>
+          <el-button @click="cancel()">取消</el-button>
+          <el-button type="primary" @click="submitForm('mchnt')">提交</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </div>
+</template>
+
+<script>
+  import ApiService from '@/services/API-servies'
+  export default {
+    data() {
+      return {
+        mchnt: {
+          mchntCode: '',
+          mchntPassword: '',
+          weixinRateTemp: '',
+          alipayRateTemp: '',
+          channelCode: '',
+          cbzid: ''
+        },
+        mchntRules: {
+          mchntCode: [
+            { required: true, message: '请输入手机号码！', trigger: 'blur'},
+            { pattern: /^1[3|4|5|7|8]\d{9}$/, message: '手机号码格式不匹配，请重新输入!', trigger: 'blur'}
+          ],
+          mchntPassword: [
+            {required: true, message: '请输入商户密码！', trigger: 'blur'},
+            {pattern: /^\w{6,}$/, message: '请输入字母、数字或下划线(至少6位)', trigger: 'blur'}
+          ],
+          weixinRateTemp: [
+            {required: true, message: '请输入微信签约费率！', trigger: 'blur'},
+            {pattern: /^\d$/, message: '请输入数字！', trigger: 'blur'}
+          ],
+          alipayRateTemp: [
+            {required: true, message: '请输入支付宝签约费率！', trigger: 'blur'},
+            {pattern: /^\d$/, message: '请输入数字！', trigger: 'blur'}
+          ],
+          channelCode: { required: true, message: '请选择支付通道！', trigger: 'change'},
+          cbzid: { required: true, message: '请输入商户标识！', trigger: 'blur'}
+        }
+      }
+    },
+    mounted() {
+    	this.getData();
+    },
+    filters: {
+      stringNumber(val) {
+        return val.toString();
+      }
+    },
+    methods: {
+    	getData() {
+    		let _this = this;
+    		let postData = {insMchntId: _this.$route.query.mchntId};
+    		_this.$nextTick(() => {
+    			ApiService.hfInsMchnt.rateDetail(postData).then(data => {
+    				if(data.code === 0) {
+              _this.mchnt = data.data;
+              _this.mchnt.channelCode = 'WXPAY';
+
+              // 获取商户标识
+              ApiService.hfInsMchnt.getHFInsMchntProperties().then(result => {
+                _this.mchnt.cbzid = result.data.cbzid;
+              });
+            }
+          });
+        })
+      },
+      submitForm(formName) {
+        let _this = this;
+        _this.$refs[formName].validate(valid => {
+          if(valid) {
+            let postData = {
+              hfInsMchntId: _this.$route.query.mchntId,
+              mchntCode: _this.mchnt.mchntCode,
+              mchntPassword: _this.mchnt.mchntPassword,
+              weixinRateTemp: _this.mchnt.weixinRateTemp,
+              alipayRateTemp: _this.mchnt.alipayRateTemp,
+              channelCode: _this.mchnt.channelCode,
+              cbzid: _this.mchnt.cbzid
+            };
+
+            ApiService.hfInsMchnt.syncRate(postData).then(data => {
+              if(data.code === 0) {
+                _this.$message({
+                  type: 'success',
+                  message: '费率同步成功!',
+                  duration: 200,
+                  onClose() {
+                    _this.$router.push({path: 'hfInsMchnt'});
+                  }
+                });
+              }else {
+                _this.$message({
+                  type: 'warning',
+                  message: data.message
+                });
+
+                return false;
+              }
+            });
+          }
+        })
+      },
+      cancel() {
+        this.$router.push({path: 'hfInsMchnt'})
+      }
+    }
+  }
+</script>
+
+<style lang="less" scoped>
+
+</style>

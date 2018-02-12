@@ -1,0 +1,10 @@
+.foot{
+  z-index: 10;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  padding: 10px;
+  text-align: center;
+  background: #D1E0F0;
+  color: #346BA5;
+}

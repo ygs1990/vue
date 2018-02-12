@@ -1,0 +1,40 @@
+.content {
+  border: 1px solid #eee;
+  margin-top: 25px;
+  padding: 20px 5px 0;
+}
+.new {
+  padding: 10px 0;
+  text-align: left;
+}
+.pager {
+  padding: 20px 0;
+  text-align: center;
+}
+.roleContainer {
+  border: 1px solid rgb(191, 203, 217);
+  border-radius: 4px;
+  height: 90px;
+  overflow-y: scroll;
+  padding-left: 15px;
+}
+.mb20 {
+  margin-bottom: 20px;
+}
+.mb0 {
+  margin-bottom: 0;
+}
+.mv5 {
+  margin: 5px 0;
+}
+.venter {
+  vertical-align: -9px;
+}
+.note {
+  color: #ff4d51;
+  font-size: 14px;
+  margin-left: 5px;
+}
+.fee-width {
+  width: 105px;
+}
