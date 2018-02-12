@@ -1,4 +1,4 @@
-# newback
+# Refactor
 
 > A Vue.js project
 
@@ -19,3 +19,5 @@ npm run build --report
 ```
 
 For detailed explanation on how things work, checkout the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+## Screenshots of the project
+!['The login page'](https://github.com/ygs1990/vue/screenshots/login.png)
